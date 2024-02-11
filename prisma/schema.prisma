@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model users {
+  id                                     String                @id @db.Uuid
+  email                                  String?               @db.VarChar(255)
+  encrypted_password                     String?               @db.VarChar(255)
+  email_confirmed_at                     DateTime?             @db.Timestamptz(6)
+  last_sign_in_at                        DateTime?             @db.Timestamptz(6)
+  raw_app_meta_data                      Json?
+  raw_user_meta_data                     Json?
+  is_super_admin                         Boolean?
+  created_at                             DateTime?             @db.Timestamptz(6)
+  updated_at                             DateTime?             @db.Timestamptz(6)
+  deleted_at                             DateTime?             @db.Timestamptz(6)
+  confession_chats                       confession_chats[]
+  confessions                            confessions[]
+  fcm_tokens                             fcm_tokens[]
+  notifications                          notifications[]
+  profile                                profile[]
+  referrals_referrals_referred_idTousers referrals[]           @relation("referrals_referred_idTousers")
+  referrals_referrals_referrer_idTousers referrals[]           @relation("referrals_referrer_idTousers")
+  transaction_history                    transaction_history[]
+}
+
+model confession_chats {
+  id            String      @id @default(uuid()) @db.VarChar
+  confession_id String      @db.VarChar
+  author_id     String?     @db.Uuid
+  created_at    DateTime    @default(now()) @db.Timestamptz(6)
+  content       String      @db.VarChar
+  read_at       DateTime?   @db.Timestamptz(6)
+  users         users?      @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  confessions   confessions @relation(fields: [confession_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model confessions {
+  id               String             @id(map: "confession_pkey") @default(uuid()) @db.VarChar
+  user_id          String             @db.Uuid
+  receipt_name     String             @db.VarChar
+  receipt_wa       String             @db.VarChar
+  text             String
+  is_anonymous     Boolean            @default(true)
+  send_schedule    DateTime           @default(now()) @db.Timestamp(6)
+  created_at       DateTime           @default(now()) @db.Timestamptz(6)
+  sender_hint_id   String?            @db.VarChar
+  status           String             @default("pending")
+  read_at          DateTime?          @db.Timestamptz(6)
+  confession_chats confession_chats[]
+  sender_hints     sender_hints?      @relation(fields: [sender_hint_id], references: [id], onUpdate: NoAction)
+  users            users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  report_users     report_users[]
+}
+
+model content {
+  id         BigInt   @id @default(autoincrement())
+  slug       String   @unique(map: "content_type_key") @db.VarChar
+  content    String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  title      String   @db.VarChar
+}
+
+model fcm_tokens {
+  user_id    String   @db.Uuid
+  token      String   @db.VarChar
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  user_agent String?  @db.VarChar
+  id         String   @id @db.Uuid
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, token], map: "idx_unique_user_token")
+}
+
+model membership_types {
+  id          BigInt   @id @default(autoincrement())
+  name        String   @default("") @db.VarChar
+  description String   @db.VarChar
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  chat_limit  Int      @default(0) @db.SmallInt
+}
+
+model notifications {
+  id          String   @id @default(uuid()) @db.VarChar
+  description String   @db.VarChar
+  is_read     Boolean  @default(false)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  user_id     String   @db.Uuid
+  title       String   @db.VarChar
+  users       users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model products {
+  id                  String                @id @db.Uuid
+  amount              BigInt                @default(0)
+  description         String?
+  discount_amount     Int                   @default(0) @db.SmallInt
+  raw_metadata        Json?                 @db.Json
+  created_at          DateTime              @default(now()) @db.Timestamptz(6)
+  utarakan_quota      Int                   @default(0) @db.SmallInt
+  name                String                @db.VarChar
+  status              String?               @db.VarChar
+  membership_type     BigInt                @default(2)
+  transaction_history transaction_history[]
+}
+
+model profile {
+  user_id                   String?  @db.Uuid
+  full_name                 String?  @db.VarChar
+  wa_number                 String?  @db.VarChar
+  created_at                DateTime @default(now()) @db.Timestamptz(6)
+  email                     String   @unique @db.VarChar
+  is_accept_privacy_policy  Boolean  @default(false)
+  is_accept_terms_condition Boolean  @default(false)
+  id                        String   @id @db.Uuid
+  quota_available           Int      @default(1) @db.SmallInt
+  membership_type           BigInt   @default(1)
+  referral_code             String   @db.VarChar(9)
+  users                     users?   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model referrals {
+  id                                 String   @id @db.Uuid
+  referrer_id                        String   @db.Uuid
+  referred_id                        String   @db.Uuid
+  created_at                         DateTime @default(now()) @db.Timestamptz(6)
+  users_referrals_referred_idTousers users    @relation("referrals_referred_idTousers", fields: [referred_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_referrals_referrer_idTousers users    @relation("referrals_referrer_idTousers", fields: [referrer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model report_users {
+  id              BigInt       @id @default(autoincrement())
+  confession_id   String?      @db.VarChar
+  report_reason   String
+  reporter_number String?      @db.VarChar
+  created_at      DateTime     @default(now()) @db.Timestamptz(6)
+  report_type     String       @db.VarChar
+  is_verified     Boolean      @default(false)
+  confessions     confessions? @relation(fields: [confession_id], references: [id], onUpdate: NoAction)
+}
+
+model sender_hints {
+  id          String        @id(map: "sender_hint_pkey") @default(uuid()) @db.VarChar
+  name        String        @unique(map: "sender_hint_name_key") @db.VarChar
+  created_at  DateTime      @default(now()) @db.Timestamptz(6)
+  confessions confessions[]
+}
+
+model transaction_history {
+  user_id            String?   @db.Uuid
+  amount             BigInt
+  status             String    @db.VarChar
+  payment_created_at DateTime  @db.Timestamptz(6)
+  raw_metadata       Json?     @db.Json
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  product_id         String?   @db.Uuid
+  id                 String    @id @default(uuid()) @db.Uuid
+  products           products? @relation(fields: [product_id], references: [id], onUpdate: NoAction)
+  users              users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+}
