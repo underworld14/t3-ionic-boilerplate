@@ -1,10 +1,9 @@
-export default function Home() {
-  console.log('Home page');
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
-  return (
-    <div className="h-screen w-screen">
-      <h1>Home</h1>
-      <p>Welcome to the Home page</p>
-    </div>
-  );
+export default function Home() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/app');
+  }, [router]);
 }

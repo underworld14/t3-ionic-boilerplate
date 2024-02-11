@@ -16,7 +16,7 @@ export async function createContext({ req, res }: trpcNext.CreateNextContextOpti
 
       return {
         ...user,
-        id: parseInt(user.userId),
+        id: user.userId,
       };
     }
     return null;
