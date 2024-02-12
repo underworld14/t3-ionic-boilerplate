@@ -3,7 +3,10 @@ http://ionicframework.com/docs/theming/ */
 
 /** Ionic CSS Variables **/
 :root {
-  --ion-color-primary: #009788;
+  --ion-font-family: 'Rubik', sans-serif;
+  --ion-dynamic-font: 'Rubik', sans-serif;
+
+  --ion-color-primary: #38bdf8;
   --ion-color-primary-rgb: 0, 151, 136;
   --ion-color-primary-contrast: #000000;
   --ion-color-primary-contrast-rgb: 0, 0, 0;

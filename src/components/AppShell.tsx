@@ -4,7 +4,7 @@ import '@ionic/react/css/core.css';
 /* Basic CSS for apps built with Ionic */
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
-import '@ionic/react/css/typography.css';
+// import '@ionic/react/css/typography.css';
 
 import 'react-spring-bottom-sheet/dist/style.css';
 
@@ -12,7 +12,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/id';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { KonstaProvider } from 'konsta/react';
 
 import { IonReactRouter } from '@ionic/react-router';
 import { Route } from 'react-router-dom';
@@ -64,18 +63,16 @@ const AppShell = () => {
       client={queryClient}
       persistOptions={{ persister: storagePersister }}
     >
-      <KonstaProvider theme="parent">
-        <IonApp>
-          <IonReactRouter basename="/app">
-            <IonRouterOutlet id="main">
-              {routes.map(route => {
-                return <Route key={route.path} {...route} />;
-              })}
-            </IonRouterOutlet>
-          </IonReactRouter>
-        </IonApp>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </KonstaProvider>
+      <IonApp>
+        <IonReactRouter basename="/app">
+          <IonRouterOutlet id="main">
+            {routes.map(route => {
+              return <Route key={route.path} {...route} />;
+            })}
+          </IonRouterOutlet>
+        </IonReactRouter>
+      </IonApp>
+      <ReactQueryDevtools initialIsOpen={false} />
     </PersistQueryClientProvider>
   );
 };
